@@ -31,5 +31,8 @@ export default {
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;600&display=swap');
 
+button:focus{
+  outline: none;
+}
 
 </style>
