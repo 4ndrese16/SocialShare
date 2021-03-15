@@ -4,17 +4,20 @@
       <h1>SocialShare</h1>
       <h3>Bienvenido, empezemos a crear tu Tree</h3>
       <p>Por favor ingresa los datos</p>
-      <form action="">
+      <form
+        action=""
+        
+      >
         <v-text-field
           label="Nombre"
           outlined
           color="#373251"
-          v-model.trim="$v.name.$model"
+          v-model="name"
+          :error-messages="nameErrors"
+          required
+          @input="$v.name.$touch()"
+          @blur="$v.name.$touch()"
         ></v-text-field>
-        <div class="error" v-if="!$v.name.required">Field is required</div>
-        <div class="error" v-if="!$v.name.minLength">
-          Name must have at least {{ $v.name.$params.minLength.min }} letters.
-        </div>
         <h3>Agrega una foto de perfil</h3>
         <v-badge
           avatar
@@ -34,11 +37,12 @@
           outlined
           label="Ingresa una descripción"
           color="#373251"
-          v-model.trim="$v.description.$model"
+          v-model="description"
+          :error-messages="descriptionErrors"
+          required
+          @input="$v.description.$touch()"
+          @blur="$v.description.$touch()"
         ></v-textarea>
-        <div class="error" v-if="!$v.description.minLength">
-          Name must have at least {{ $v.description.$params.minLength.min }} letters.
-        </div>
         <div class="social-media-list">
           <div class="social-media-input">
             <div class="icon" @click="dialog = true">
@@ -65,32 +69,26 @@
             <button>Añadir más links</button>
           </div>
         </div>
-        <button type="submit">Generar Tree</button>
+        <button type="submit" @click="submit">Generar Tree</button>
       </form>
     </div>
-    <v-dialog v-model="dialog" width="200">
-      <div class="selection">
-        <button class="icon">
-          <v-icon large color="white"> mdi-facebook </v-icon>
-        </button>
-        <button class="icon">
-          <v-icon large color="white"> mdi-instagram </v-icon>
-        </button>
-        <button class="icon">
-          <v-icon large color="white"> mdi-twitter </v-icon>
-        </button>
-        <button class="icon">
-          <v-icon large color="white"> mdi-youtube </v-icon>
-        </button>
-      </div>
+    <v-dialog v-model="dialog" >
+      <MediaChange/>
     </v-dialog>
   </div>
 </template>
 
 <script>
 import { required, minLength } from "vuelidate/lib/validators";
+import MediaChange from '@/components/MediaChange.vue';
 
 export default {
+  // mixins: [validationMixin],
+
+  components: {
+    MediaChange,
+  },
+
   data() {
     return {
       dialog: false,
@@ -104,9 +102,36 @@ export default {
       minLength: minLength(2),
     },
     description: {
+      required,
       minLength: minLength(10),
     },
   },
+
+  computed: {
+    nameErrors() {
+      const errors = [];
+      if (!this.$v.name.$dirty) return errors;
+      !this.$v.name.minLength &&
+        errors.push("Name must be at most 10 characters long");
+      !this.$v.name.required && errors.push("Name is required.");
+      return errors;
+    },
+    descriptionErrors() {
+      const errors = [];
+      if (!this.$v.description.$dirty) return errors;
+      !this.$v.description.minLength &&
+        errors.push("Name must be at most 10 characters long");
+      !this.$v.description.required && errors.push("Name is required.");
+      return errors;
+    },
+  },
+
+  methods: {
+      submit () {
+        this.$v.$touch()
+      },
+  }
+
 };
 </script>
 
@@ -173,14 +198,6 @@ export default {
     }
   }
 
-  .v-dialog {
-    .selection {
-      display: flex;
-      background-color: #ffb600;
-      button {
-        margin-right: 10px;
-      }
-    }
-  }
+  
 }
 </style>
