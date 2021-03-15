@@ -1,6 +1,7 @@
 <template>
   <div class="index-main-container">
     <div class="index-content">
+      <h2>{{ socialId }}</h2>
       <h1>SocialShare</h1>
       <h3>Bienvenido, empezemos a crear tu Tree</h3>
       <p>Por favor ingresa los datos</p>
@@ -9,12 +10,12 @@
           label="Nombre"
           outlined
           color="#373251"
-          v-model.trim="$v.name.$model"
+          v-model="name"
+          :error-messages="nameErrors"
+          required
+          @input="$v.name.$touch()"
+          @blur="$v.name.$touch()"
         ></v-text-field>
-        <div class="error" v-if="!$v.name.required">Field is required</div>
-        <div class="error" v-if="!$v.name.minLength">
-          Name must have at least {{ $v.name.$params.minLength.min }} letters.
-        </div>
         <h3>Agrega una foto de perfil</h3>
         <v-badge
           avatar
@@ -34,11 +35,12 @@
           outlined
           label="Ingresa una descripción"
           color="#373251"
-          v-model.trim="$v.description.$model"
+          v-model="description"
+          :error-messages="descriptionErrors"
+          required
+          @input="$v.description.$touch()"
+          @blur="$v.description.$touch()"
         ></v-textarea>
-        <div class="error" v-if="!$v.description.minLength">
-          Name must have at least {{ $v.description.$params.minLength.min }} letters.
-        </div>
         <div class="social-media-list">
           <div class="social-media-input">
             <div class="icon" @click="dialog = true">
@@ -62,35 +64,29 @@
             ></v-text-field>
           </div>
           <div class="add-more">
-            <button>Añadir más links</button>
+            <div>Añadir más links</div>
           </div>
         </div>
-        <button @click.prevent="submitSocial" type="submit">Generar Tree</button>
+        <RouterLink :to="socialId" @click.prevent="submit">Generar Tree</RouterLink>
       </form>
     </div>
-    <v-dialog v-model="dialog" width="200">
-      <div class="selection">
-        <button class="icon">
-          <v-icon large color="white"> mdi-facebook </v-icon>
-        </button>
-        <button class="icon">
-          <v-icon large color="white"> mdi-instagram </v-icon>
-        </button>
-        <button class="icon">
-          <v-icon large color="white"> mdi-twitter </v-icon>
-        </button>
-        <button class="icon">
-          <v-icon large color="white"> mdi-youtube </v-icon>
-        </button>
-      </div>
+    <v-dialog v-model="dialog">
+      <MediaChange />
     </v-dialog>
   </div>
 </template>
 
 <script>
 import { required, minLength } from "vuelidate/lib/validators";
+import MediaChange from "@/components/MediaChange.vue";
 
 export default {
+  // mixins: [validationMixin],
+
+  components: {
+    MediaChange,
+  },
+
   data() {
     return {
       dialog: false,
@@ -98,20 +94,53 @@ export default {
       description: "",
     };
   },
-
-  methods: {
-    submitSocial() {
-      this.$store.dispatch("createSocial", {name: this.name})``
-    }
-  },
-
   validations: {
     name: {
       required,
       minLength: minLength(2),
     },
     description: {
+      required,
       minLength: minLength(10),
+    },
+  },
+
+  computed: {
+    nameErrors() {
+      const errors = [];
+      if (!this.$v.name.$dirty) return errors;
+      !this.$v.name.minLength &&
+        errors.push("Name must be at most 10 characters long");
+      !this.$v.name.required && errors.push("Name is required.");
+      return errors;
+    },
+    descriptionErrors() {
+      const errors = [];
+      if (!this.$v.description.$dirty) return errors;
+      !this.$v.description.minLength &&
+        errors.push("Name must be at most 10 characters long");
+      !this.$v.description.required && errors.push("Name is required.");
+      return errors;
+    },
+    socialId() {
+      return this.$store.state.socialId
+    }
+  },
+
+  methods: {
+    submit() {
+      this.$v.$touch();
+
+      if (this.$v.$invalid) {
+        
+      } else {
+        this.$store.dispatch('createSocial', {
+        name: this.name, 
+        description: this.description,
+        
+      })
+      console.log('oki')
+      }
     },
   },
 };
@@ -169,6 +198,9 @@ export default {
       }
     }
 
+    
+
+    .add-more div, 
     button {
       font-family: "Montserrat", sans-serif;
       color: white;
@@ -177,15 +209,6 @@ export default {
       width: 300px;
       border-radius: 10px;
       font-size: 25px;
-    }
-  }
-
-  .v-dialog {
-    .selection {
-      background-color: #ffb600;
-      button {
-        margin-right: 10px;
-      }
     }
   }
 }

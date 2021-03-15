@@ -25,7 +25,13 @@
 </template>
 
 <script>
-export default {};
+export default {
+  created() {
+    this.$store.dispatch('getSocial')
+    this.$router.params.id
+    console.log(this.$router.params.id)
+  }
+};
 </script>
 
 <style lang="scss" scoped>
