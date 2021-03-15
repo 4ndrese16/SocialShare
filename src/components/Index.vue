@@ -101,7 +101,7 @@ export default {
 
   methods: {
     submitSocial() {
-      this.$store.dispatch("createSocial", {name: this.name})
+      this.$store.dispatch("createSocial", {name: this.name})``
     }
   },
 
