@@ -65,7 +65,7 @@
             <button>Añadir más links</button>
           </div>
         </div>
-        <button type="submit">Generar Tree</button>
+        <button @click.prevent="submitSocial" type="submit">Generar Tree</button>
       </form>
     </div>
     <v-dialog v-model="dialog" width="200">
@@ -98,6 +98,13 @@ export default {
       description: "",
     };
   },
+
+  methods: {
+    submitSocial() {
+      this.$store.dispatch("createSocial", {name: this.name})
+    }
+  },
+
   validations: {
     name: {
       required,
@@ -175,7 +182,6 @@ export default {
 
   .v-dialog {
     .selection {
-      display: flex;
       background-color: #ffb600;
       button {
         margin-right: 10px;
