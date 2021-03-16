@@ -3,7 +3,7 @@
     <div class="index-content">
       <h2>{{ socialId }}</h2>
       <h1>SocialShare</h1>
-      <h3>Bienvenido, empezemos a crear tu Tree</h3>
+      <h3>Bienvenido, empezemos a crear tu Share</h3>
       <p>Por favor ingresa los datos</p>
       <form action="">
         <v-text-field
@@ -16,7 +16,7 @@
           @input="$v.name.$touch()"
           @blur="$v.name.$touch()"
         ></v-text-field>
-        <h3>Agrega una foto de perfil</h3>
+        <h3>Agrega una foto</h3>
         <v-badge
           avatar
           color="#373251"
@@ -42,15 +42,33 @@
           @blur="$v.description.$touch()"
         ></v-textarea>
         <div class="social-media-list">
-          <div class="social-media-input">
-            <div class="icon" @click="dialog = true">
-              <v-icon large color="white"> mdi-facebook </v-icon>
+          <div
+            class="social-media-input"
+            v-for="(icon, index) in currentIcons"
+            :key="index"
+          >
+            <div class="icon" :id="icon.id" @click="openDialog">
+              <v-icon large color="white"> mdi-{{ icon.icon }} </v-icon>
             </div>
             <v-text-field
               label="Ingresa el link"
               outlined
               color="#373251"
-              class="text-input-field"
+              v-model="socialLink"
+              :error-messages="socialLinkErrors"
+              required
+              @input="$v.socialLink.$touch()"
+              @blur="$v.socialLink.$touch()"
+            ></v-text-field>
+          </div>
+          <!-- <div class="social-media-input">
+            <div class="icon" @click="dialog = true">
+              <v-icon large color="white" > mdi-{{ currentIcon }} </v-icon>
+            </div>
+            <v-text-field
+              label="Ingresa el link"
+              outlined
+              color="#373251"
             ></v-text-field>
           </div>
           <div class="social-media-input">
@@ -62,22 +80,29 @@
               outlined
               color="#373251"
             ></v-text-field>
-          </div>
+          </div> -->
           <div class="add-more">
-            <div>Añadir más links</div>
+            <div @click="addLink">Añadir más links</div>
           </div>
         </div>
-        <RouterLink :to="socialId" @click.prevent="submit">Generar Tree</RouterLink>
+        <RouterLink :to="socialId" @click.prevent="submit"
+          >Generar Tree</RouterLink
+        >
       </form>
     </div>
-    <v-dialog v-model="dialog">
-      <MediaChange />
+    <v-dialog v-model="dialog" id="selection" width="400">
+      <MediaChange
+        :iconClick="open"
+        v-on:close="closeDialog"
+        v-on:currentIcon="linkChange"
+      >
+      </MediaChange>
     </v-dialog>
   </div>
 </template>
 
 <script>
-import { required, minLength } from "vuelidate/lib/validators";
+import { required, minLength, url } from "vuelidate/lib/validators";
 import MediaChange from "@/components/MediaChange.vue";
 
 export default {
@@ -92,6 +117,17 @@ export default {
       dialog: false,
       name: "",
       description: "",
+      currentIcons: [
+        {
+          icon: "facebook",
+          id: 0,
+        },
+        {
+          icon: "facebook",
+          id: 1,
+        },
+      ],
+      open: "",
     };
   },
   validations: {
@@ -103,6 +139,10 @@ export default {
       required,
       minLength: minLength(10),
     },
+    socialLink: {
+      required,
+      url,
+    },
   },
 
   computed: {
@@ -110,21 +150,28 @@ export default {
       const errors = [];
       if (!this.$v.name.$dirty) return errors;
       !this.$v.name.minLength &&
-        errors.push("Name must be at most 10 characters long");
-      !this.$v.name.required && errors.push("Name is required.");
+        errors.push("Debe tener al menos 2 caracteres");
+      !this.$v.name.required && errors.push("Este campo es requerido");
       return errors;
     },
     descriptionErrors() {
       const errors = [];
       if (!this.$v.description.$dirty) return errors;
       !this.$v.description.minLength &&
-        errors.push("Name must be at most 10 characters long");
-      !this.$v.description.required && errors.push("Name is required.");
+        errors.push("Debe tener al menos 10 caractere");
+      !this.$v.description.required && errors.push("Este campo es requerido");
+      return errors;
+    },
+    socialLinkErrors() {
+      const errors = [];
+      if (!this.$v.socialLink.$dirty) return errors;
+      !this.$v.socialLink.url && errors.push("Debe ser un url válido");
+      !this.$v.socialLink.required && errors.push("Este campo es requerido");
       return errors;
     },
     socialId() {
-      return this.$store.state.socialId
-    }
+      return this.$store.state.socialId;
+    },
   },
 
   methods: {
@@ -132,15 +179,37 @@ export default {
       this.$v.$touch();
 
       if (this.$v.$invalid) {
-        
       } else {
-        this.$store.dispatch('createSocial', {
-        name: this.name, 
-        description: this.description,
-        
-      })
-      console.log('oki')
+        this.$store.dispatch("createSocial", {
+          name: this.name,
+          description: this.description,
+        });
+        console.log("oki");
       }
+    },
+
+    addLink() {
+      const curIconsLength = this.currentIcons.length;
+      this.currentIcons.push({
+        icon: "facebook",
+        id: curIconsLength,
+      });
+      console.log(curIconsLength);
+    },
+
+    linkChange(value) {
+      this.currentIcons[value.iconClick].icon = value.iconId;
+    },
+
+    openDialog(event) {
+      const open = event.target.closest(".icon").id;
+      this.open = open;
+      this.dialog = true;
+      console.log(open);
+    },
+
+    closeDialog(value) {
+      this.dialog = value;
     },
   },
 };
@@ -198,9 +267,7 @@ export default {
       }
     }
 
-    
-
-    .add-more div, 
+    .add-more div,
     button {
       font-family: "Montserrat", sans-serif;
       color: white;
@@ -210,6 +277,10 @@ export default {
       border-radius: 10px;
       font-size: 25px;
     }
+  }
+
+  .v-dialog {
+    border: 2px white solid;
   }
 }
 </style>
