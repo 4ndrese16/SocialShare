@@ -1,7 +1,6 @@
 <template>
   <div class="index-main-container">
     <div class="index-content">
-      <h2>{{ socialId }}</h2>
       <h1>SocialShare</h1>
       <h3>Bienvenido, empezemos a crear tu Share</h3>
       <p>Por favor ingresa los datos</p>
@@ -16,21 +15,6 @@
           @input="$v.name.$touch()"
           @blur="$v.name.$touch()"
         ></v-text-field>
-        <h3>Agrega una foto</h3>
-        <v-badge
-          avatar
-          color="#373251"
-          icon="mdi-plus"
-          dark
-          bottom
-          overlap
-          offset-x="30"
-          offset-y="30"
-        >
-          <v-avatar size="150">
-            <v-img src="https://cdn.vuetifyjs.com/images/lists/2.jpg"></v-img>
-          </v-avatar>
-        </v-badge>
         <v-textarea
           outlined
           label="Ingresa una descripción"
@@ -54,11 +38,7 @@
               label="Ingresa el link"
               outlined
               color="#373251"
-              v-model="socialLink"
-              :error-messages="socialLinkErrors"
-              required
-              @input="$v.socialLink.$touch()"
-              @blur="$v.socialLink.$touch()"
+               v-model="icon.socialLink"  
             ></v-text-field>
           </div>
           <!-- <div class="social-media-input">
@@ -85,8 +65,8 @@
             <div @click="addLink">Añadir más links</div>
           </div>
         </div>
-        <RouterLink :to="socialId" @click.prevent="submit"
-          >Generar Tree</RouterLink
+        <div class="submit" @click="submit"
+          > <div>Generar Tree</div></div
         >
       </form>
     </div>
@@ -102,7 +82,7 @@
 </template>
 
 <script>
-import { required, minLength, url } from "vuelidate/lib/validators";
+import { required, minLength, } from "vuelidate/lib/validators";
 import MediaChange from "@/components/MediaChange.vue";
 
 export default {
@@ -120,16 +100,26 @@ export default {
       currentIcons: [
         {
           icon: "facebook",
+          socialLink: "",
           id: 0,
         },
         {
           icon: "facebook",
+          socialLink: "",
           id: 1,
         },
       ],
+      image: "",
       open: "",
     };
   },
+
+  watch: {
+    image() {
+      console.log(this.image)
+    }
+  },
+
   validations: {
     name: {
       required,
@@ -139,10 +129,10 @@ export default {
       required,
       minLength: minLength(10),
     },
-    socialLink: {
-      required,
-      url,
-    },
+    // socialLink: {
+    //   required,
+    //   url,
+    // },
   },
 
   computed: {
@@ -163,6 +153,7 @@ export default {
       return errors;
     },
     socialLinkErrors() {
+      // for()
       const errors = [];
       if (!this.$v.socialLink.$dirty) return errors;
       !this.$v.socialLink.url && errors.push("Debe ser un url válido");
@@ -177,14 +168,15 @@ export default {
   methods: {
     submit() {
       this.$v.$touch();
-
+     
       if (this.$v.$invalid) {
       } else {
         this.$store.dispatch("createSocial", {
           name: this.name,
           description: this.description,
+          links: this.currentIcons,
         });
-        console.log("oki");
+         
       }
     },
 
@@ -220,34 +212,37 @@ export default {
   display: flex;
   justify-content: center;
   background: linear-gradient(#fbc43a, #ffb600);
-  padding: 5% 0;
+  padding: 90px 0;
   font-family: "Montserrat", sans-serif;
 
   .index-content {
-    width: 800px;
+    width: 60%;
+    min-width: 350px;
     background-color: #fffaed;
     border-radius: 30px;
-    padding: 3% 15%;
+    padding: 3% 10%;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 
     h1 {
       color: #373251;
-      font-size: 60px;
+      font-size: max(5.5vw, 35px);
       font-weight: 600;
+      width: 100%;
     }
 
     h3 {
       color: #373251;
       font-weight: 600;
+      font-size: max(2.5vw, 18px);
     }
 
     p {
       color: #373251;
       font-weight: 600;
-    }
-
-    .v-badge {
-      margin-bottom: 30px;
+      font-size: max(2vw, 15px);
     }
 
     .social-media-list {
@@ -263,24 +258,80 @@ export default {
           padding-top: 10px;
           border-radius: 10px;
           margin-right: 10px;
+          cursor: pointer;
         }
       }
     }
 
+    .add-more{
+      display: flex;
+      justify-content: center;
+    }
+
+    .submit{
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
     .add-more div,
-    button {
+    .submit div{
       font-family: "Montserrat", sans-serif;
       color: white;
       background: #373251;
-      padding: 10px 30px;
-      width: 300px;
+      padding: 3% 5%;
+      width: 80%;
+      min-width: 100px;
       border-radius: 10px;
-      font-size: 25px;
+      font-size: max(2vw, 17px);
+      cursor: pointer;
+      
+     
     }
   }
 
   .v-dialog {
     border: 2px white solid;
+  }
+}
+
+@media (max-width: 660px) {
+  .index-main-container {
+
+
+  .index-content {
+
+
+    .social-media-list {
+      margin-bottom: 20px;
+
+      .social-media-input {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .icon {
+        margin-bottom: 20px;
+        }
+      }
+    }
+
+
+}
+  }
+}
+
+@media (max-width: 370px) {
+  .index-main-container {
+
+
+  .index-content {
+    min-width: 300px;
+
+    
+
+
+}
   }
 }
 </style>
