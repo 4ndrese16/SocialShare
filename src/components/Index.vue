@@ -66,7 +66,7 @@
           </div>
         </div>
         <div class="submit" @click="submit"
-          > <div>Generar Tree</div></div
+          > <div>Generar Share</div></div
         >
       </form>
     </div>
